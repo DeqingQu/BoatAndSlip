@@ -10,7 +10,15 @@ class Boat(ndb.Model):
     name = ndb.StringProperty(required=True)
     type = ndb.StringProperty(required=True)
     length = ndb.FloatProperty(required=True)
-    is_at_sea = ndb.BooleanProperty()
+    is_at_sea = ndb.BooleanProperty(default=True)
+
+
+class Slip(ndb.Model):
+    id = ndb.StringProperty()
+    number = ndb.IntegerProperty(required=True)
+    current_boat = ndb.StringProperty()
+    arrival_date = ndb.DateProperty()
+    departure_history = ndb.JsonProperty()
 
 
 class Fish(ndb.Model):
@@ -29,7 +37,6 @@ class BoatHandler(webapp2.RequestHandler):
         boat_data = json.loads(self.request.body)
         if "name" in boat_data and "type" in boat_data and "length" in boat_data:
             new_boat = Boat(name=boat_data["name"], type=boat_data["type"], length=float(boat_data["length"]))
-            new_boat.is_at_sea = True
             new_boat.put()
             new_boat.id = new_boat.key.urlsafe()
             new_boat.put()
@@ -47,6 +54,31 @@ class BoatHandler(webapp2.RequestHandler):
                 self.response.write(json.dumps(boat_dict))
             else:
                 self.response.write('can not find boat')
+                self.response.set_status(404)
+
+
+class SlipHandler(webapp2.RequestHandler):
+    def post(self):
+        slip_data = json.loads(self.request.body)
+        if "number" in slip_data:
+            new_slip = Slip(number=int(slip_data["number"]))
+            new_slip.put()
+            new_slip.id = new_slip.key.urlsafe()
+            new_slip.put()
+            slip_dict = new_slip.to_dict()
+            self.response.write(json.dumps(slip_dict))
+        else:
+            self.response.write('input parameter error')
+            self.response.set_status(422)
+
+    def get(self, id=None):
+        if id:
+            slip = ndb.Key(urlsafe=id).get()
+            if slip is not None:
+                slip_dict = slip.to_dict()
+                self.response.write(json.dumps(slip_dict))
+            else:
+                self.response.write('can not find slip')
                 self.response.set_status(404)
 
 
@@ -81,5 +113,7 @@ app = webapp2.WSGIApplication([
     ('/fish', FishHandler),
     ('/fish/(.*)', FishHandler),
     ('/boat', BoatHandler),
-    ('/boat/(.*)', BoatHandler)
+    ('/boat/(.*)', BoatHandler),
+    ('/slip', SlipHandler),
+    ('/slip/(.*)', SlipHandler)
 ], debug=True)
