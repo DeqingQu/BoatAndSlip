@@ -42,19 +42,35 @@ class BoatHandler(webapp2.RequestHandler):
             new_boat.put()
             boat_dict = new_boat.to_dict()
             self.response.write(json.dumps(boat_dict))
+            self.response.set_status(201)
         else:
             self.response.write('input parameter error')
             self.response.set_status(422)
 
     def get(self, id=None):
         if id:
-            boat = ndb.Key(urlsafe=id).get()
-            if boat is not None:
+            key = ndb.Key(urlsafe=id)
+            boat = key.get()
+            if boat is not None and key.kind() == "Boat":
                 boat_dict = boat.to_dict()
                 self.response.write(json.dumps(boat_dict))
             else:
                 self.response.write('can not find boat')
                 self.response.set_status(404)
+
+
+    def delete(self, id=None):
+        if id:
+            key = ndb.Key(urlsafe=id)
+            boat = key.get()
+            if boat is not None and key.kind()=="Boat":
+                if key.kind() == "Boat":
+                    key.delete()
+                    self.response.set_status(204)
+            else:
+                self.response.write('can not find Boat')
+                self.response.set_status(404)
+
 
 
 class SlipHandler(webapp2.RequestHandler):
@@ -67,16 +83,30 @@ class SlipHandler(webapp2.RequestHandler):
             new_slip.put()
             slip_dict = new_slip.to_dict()
             self.response.write(json.dumps(slip_dict))
+            self.response.set_status(201)
         else:
             self.response.write('input parameter error')
             self.response.set_status(422)
 
     def get(self, id=None):
         if id:
-            slip = ndb.Key(urlsafe=id).get()
-            if slip is not None:
+            key = ndb.Key(urlsafe=id)
+            slip = key.get()
+            if key is not None and key.kind() == "Slip":
                 slip_dict = slip.to_dict()
                 self.response.write(json.dumps(slip_dict))
+            else:
+                self.response.write('can not find slip')
+                self.response.set_status(404)
+
+
+    def delete(self, id=None):
+        if id:
+            key = ndb.Key(urlsafe=id)
+            slip = key.get()
+            if slip is not None and key.kind() == "Slip":
+                key.delete()
+                self.response.set_status(204)
             else:
                 self.response.write('can not find slip')
                 self.response.set_status(404)
