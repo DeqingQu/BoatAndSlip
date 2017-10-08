@@ -72,6 +72,14 @@ class BoatHandler(webapp2.RequestHandler):
                 self.response.set_status(404)
 
 
+class BoatsHandler(webapp2.RequestHandler):
+    def get(self):
+        query = Boat.query()
+        boats = []
+        for boat in query:
+            boats.append(boat.to_dict())
+        self.response.write(json.dumps(boats))
+
 
 class SlipHandler(webapp2.RequestHandler):
     def post(self):
@@ -144,6 +152,7 @@ app = webapp2.WSGIApplication([
     ('/fish/(.*)', FishHandler),
     ('/boat', BoatHandler),
     ('/boat/(.*)', BoatHandler),
+    ('/boats', BoatsHandler),
     ('/slip', SlipHandler),
     ('/slip/(.*)', SlipHandler)
 ], debug=True)
