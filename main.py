@@ -120,6 +120,15 @@ class SlipHandler(webapp2.RequestHandler):
                 self.response.set_status(404)
 
 
+class SplitsHandler(webapp2.RequestHandler):
+    def get(self):
+        query = Slip.query()
+        slips = []
+        for slip in query:
+            slips.append(slip.to_dict())
+        self.response.write(json.dumps(slips))
+
+
 class FishHandler(webapp2.RequestHandler):
     def post(self):
         fish_data = json.loads(self.request.body)
@@ -154,5 +163,6 @@ app = webapp2.WSGIApplication([
     ('/boat/(.*)', BoatHandler),
     ('/boats', BoatsHandler),
     ('/slip', SlipHandler),
-    ('/slip/(.*)', SlipHandler)
+    ('/slip/(.*)', SlipHandler),
+    ('/slips', SplitsHandler)
 ], debug=True)
