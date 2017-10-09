@@ -72,23 +72,7 @@ class BoatsHandler(webapp2.RequestHandler):
                 self.response.set_status(404)
 
 
-# class BoatsHandler(webapp2.RequestHandler):
-#     def get(self):
-#         query = Boat.query()
-#         boats = []
-#         for boat in query:
-#             boats.append(boat.to_dict())
-#         self.response.write(json.dumps(boats))
-
-
 class SplitsHandler(webapp2.RequestHandler):
-    def get(self):
-        query = Slip.query()
-        slips = []
-        for slip in query:
-            slips.append(slip.to_dict())
-        self.response.write(json.dumps(slips))
-
     def post(self):
         slip_data = json.loads(self.request.body)
         if "number" in slip_data:
@@ -102,6 +86,13 @@ class SplitsHandler(webapp2.RequestHandler):
         else:
             self.response.write('input parameter error')
             self.response.set_status(422)
+
+    def get(self):
+        query = Slip.query()
+        slips = []
+        for slip in query:
+            slips.append(slip.to_dict())
+        self.response.write(json.dumps(slips))
 
     def get(self, id=None):
         if id:
@@ -134,6 +125,6 @@ app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/boats', BoatsHandler),
     ('/boats/(.*)', BoatsHandler),
+    ('/slips', SplitsHandler),
     ('/slips/(.*)', SplitsHandler),
-    ('/slips', SplitsHandler)
 ], debug=True)
