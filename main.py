@@ -59,6 +59,26 @@ class BoatsHandler(webapp2.RequestHandler):
                 self.response.write('can not find boat')
                 self.response.set_status(404)
 
+    def patch(self, id=None):
+        if id:
+            key = ndb.Key(urlsafe=id)
+            boat = key.get()
+            #   to check whether the boat with id is existed
+            if boat is not None and key.kind() == "Boat":
+                body_data = json.loads(self.request.body)
+                if "name" in body_data:
+                    boat.name = body_data["name"]
+                if "type" in body_data:
+                    boat.type = body_data["type"]
+                if "length" in body_data:
+                    boat.length = float(body_data["length"])
+                boat.put()
+                boat_dict = boat.to_dict()
+                self.response.write(json.dumps(boat_dict))
+            else:
+                self.response.write('can not find boat')
+                self.response.set_status(404)
+
     def delete(self, id=None):
         if id:
             key = ndb.Key(urlsafe=id)
