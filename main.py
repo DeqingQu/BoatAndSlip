@@ -125,6 +125,22 @@ class SplitsHandler(webapp2.RequestHandler):
                 self.response.write('can not find slip')
                 self.response.set_status(404)
 
+    def patch(self, id=None):
+        if id:
+            key = ndb.Key(urlsafe=id)
+            slip = key.get()
+            #   to check whether the slip with id is existed
+            if slip is not None and key.kind() == "Slip":
+                body_data = json.loads(self.request.body)
+                if "number" in body_data:
+                    slip.number = int(body_data["number"])
+                slip.put()
+                slip_dict = slip.to_dict()
+                self.response.write(json.dumps(slip_dict))
+            else:
+                self.response.write('can not find slip')
+                self.response.set_status(404)
+
     def delete(self, id=None):
         if id:
             key = ndb.Key(urlsafe=id)
