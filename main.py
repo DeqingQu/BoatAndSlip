@@ -10,7 +10,7 @@ class Boat(ndb.Model):
     name = ndb.StringProperty(required=True)
     type = ndb.StringProperty(required=True)
     length = ndb.FloatProperty(required=True)
-    is_at_sea = ndb.BooleanProperty(default=True)
+    at_sea = ndb.BooleanProperty(default=True)
 
 
 class Slip(ndb.Model):
@@ -91,6 +91,16 @@ class BoatsHandler(webapp2.RequestHandler):
                 self.response.set_status(404)
 
 
+class BoatsAtSeaHandler(webapp2.RequestHandler):
+    def put(self, id=None):
+
+        if id:
+
+            self.response.write('at_sea')
+        else:
+            self.response.set_status(404)
+
+
 class SplitsHandler(webapp2.RequestHandler):
     def post(self):
         slip_data = json.loads(self.request.body)
@@ -157,6 +167,7 @@ webapp2.WSGIApplication.allowed_methods = new_allowed_methods
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/boats/(.*)/at_sea', BoatsAtSeaHandler),
     ('/boats', BoatsHandler),
     ('/boats/(.*)', BoatsHandler),
     ('/slips', SplitsHandler),
