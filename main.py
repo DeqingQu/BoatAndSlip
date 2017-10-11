@@ -1,5 +1,5 @@
 from google.appengine.ext import ndb
-
+import datetime
 import webapp2
 import json
 
@@ -17,7 +17,7 @@ class Slip(ndb.Model):
     id = ndb.StringProperty()
     number = ndb.IntegerProperty(required=True)
     current_boat = ndb.StringProperty()
-    arrival_date = ndb.DateProperty()
+    arrival_date = ndb.StringProperty()
     departure_history = ndb.JsonProperty()
 
 
@@ -161,7 +161,25 @@ class SplitsHandler(webapp2.RequestHandler):
 class ArrivalHandler(webapp2.RequestHandler):
     def put(self, boat_id=None, slip_id=None):
         if boat_id and slip_id:
-            self.response.write("boat_id = {}, slip_id = {}".format(boat_id, slip_id))
+            #   get boat entity
+            boat_key = ndb.Key(urlsafe=boat_id)
+            boat = boat_key.get()
+            #   get slip entity
+            slip_key = ndb.Key(urlsafe=slip_id)
+            slip = slip_key.get()
+            #   check current_boat of slip
+            if slip.current_boat is None:
+                boat.at_sea = False
+                slip.current_boat = boat.id
+                slip.arrival_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                slip_dict = slip.to_dict()
+                boat.put()
+                slip.put()
+                self.response.set_status(200)
+                self.response.write(json.dumps(slip_dict))
+                return
+            else:
+                self.response.set_status(403)
         else:
             self.response.set_status(404)
 
