@@ -90,14 +90,11 @@ class BoatsHandler(webapp2.RequestHandler):
                 self.response.write('can not find Boat')
                 self.response.set_status(404)
 
-
-class BoatsAtSeaHandler(webapp2.RequestHandler):
-    def put(self, id=None):
-
-        if id:
-
-            self.response.write('at_sea')
+    def put(self, boat_id=None, at_sea=None):
+        if boat_id and at_sea == 'at_sea':
+            self.response.write('boat is at sea')
         else:
+            self.response.write('can not find Boat or not at sea')
             self.response.set_status(404)
 
 
@@ -161,15 +158,24 @@ class SplitsHandler(webapp2.RequestHandler):
                 self.response.set_status(404)
 
 
+class ArrivalHandler(webapp2.RequestHandler):
+    def put(self, boat_id=None, slip_id=None):
+        if boat_id and slip_id:
+            self.response.write("boat_id = {}, slip_id = {}".format(boat_id, slip_id))
+        else:
+            self.response.set_status(404)
+
+
 allowed_methods = webapp2.WSGIApplication.allowed_methods
 new_allowed_methods = allowed_methods.union(('PATCH',))
 webapp2.WSGIApplication.allowed_methods = new_allowed_methods
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/boats/(.*)/at_sea', BoatsAtSeaHandler),
-    ('/boats', BoatsHandler),
+    ('/boats/(.*)/(.*)', BoatsHandler),
     ('/boats/(.*)', BoatsHandler),
-    ('/slips', SplitsHandler),
+    ('/boats', BoatsHandler),
     ('/slips/(.*)', SplitsHandler),
+    ('/slips', SplitsHandler),
+    ('/arrival/(.*)/(.*)', ArrivalHandler)
 ], debug=True)
