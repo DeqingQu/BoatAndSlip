@@ -92,7 +92,33 @@ class BoatsHandler(webapp2.RequestHandler):
 
     def put(self, boat_id=None, at_sea=None):
         if boat_id and at_sea == 'at_sea':
-            self.response.write('boat is at sea')
+            #   get boat entity
+            boat_key = ndb.Key(urlsafe=boat_id)
+            boat = boat_key.get()
+            if boat.at_sea:
+                boat_dict = boat.to_dict()
+                self.response.write(json.dumps(boat_dict))
+                return
+            else:
+                query = Slip.query()
+                arrival_slip = False
+                for slip in query:
+                    if slip.current_boat == boat.id:
+                        arrival_slip = slip
+                        break
+                if arrival_slip:
+                    arrival_slip.current_boat = None
+                    arrival_slip.arrival_date = None
+                    # arrival_slip.departure_history
+                    arrival_slip.put()
+                    boat.at_sea = True
+                    boat.put()
+                    boat_dict = boat.to_dict()
+                    self.response.write(json.dumps(boat_dict))
+                    return
+                else:
+                    self.response.write('can not find slip')
+                    self.response.set_status(403)
         else:
             self.response.write('can not find Boat or not at sea')
             self.response.set_status(404)
