@@ -41,13 +41,6 @@ class BoatsHandler(webapp2.RequestHandler):
             self.response.write('input parameter error')
             self.response.set_status(422)
 
-    def get(self):
-        query = Boat.query()
-        boats = []
-        for boat in query:
-            boats.append(boat.to_dict())
-        self.response.write(json.dumps(boats))
-
     def get(self, id=None):
         if id:
             key = ndb.Key(urlsafe=id)
@@ -58,6 +51,12 @@ class BoatsHandler(webapp2.RequestHandler):
             else:
                 self.response.write('can not find boat')
                 self.response.set_status(404)
+        else:
+            query = Boat.query()
+            boats = []
+            for boat in query:
+                boats.append(boat.to_dict())
+            self.response.write(json.dumps(boats))
 
     def patch(self, id=None):
         if id:
@@ -107,13 +106,6 @@ class SplitsHandler(webapp2.RequestHandler):
             self.response.write('input parameter error')
             self.response.set_status(422)
 
-    def get(self):
-        query = Slip.query()
-        slips = []
-        for slip in query:
-            slips.append(slip.to_dict())
-        self.response.write(json.dumps(slips))
-
     def get(self, id=None):
         if id:
             key = ndb.Key(urlsafe=id)
@@ -124,6 +116,12 @@ class SplitsHandler(webapp2.RequestHandler):
             else:
                 self.response.write('can not find slip')
                 self.response.set_status(404)
+        else:
+            query = Slip.query()
+            slips = []
+            for slip in query:
+                slips.append(slip.to_dict())
+            self.response.write(json.dumps(slips))
 
     def patch(self, id=None):
         if id:
