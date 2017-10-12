@@ -16,9 +16,9 @@ class Boat(ndb.Model):
 class Slip(ndb.Model):
     id = ndb.StringProperty()
     number = ndb.IntegerProperty(required=True)
-    current_boat = ndb.StringProperty()
-    arrival_date = ndb.StringProperty()
-    departure_history = ndb.JsonProperty()
+    current_boat = ndb.StringProperty(default=None)
+    arrival_date = ndb.StringProperty(default=None)
+    departure_history = ndb.JsonProperty(default=None)
 
 
 class MainPage(webapp2.RequestHandler):
@@ -57,26 +57,6 @@ class BoatsHandler(webapp2.RequestHandler):
             for boat in query:
                 boats.append(boat.to_dict())
             self.response.write(json.dumps(boats))
-
-    def patch(self, id=None):
-        if id:
-            key = ndb.Key(urlsafe=id)
-            boat = key.get()
-            #   to check whether the boat with id is existed
-            if boat is not None and key.kind() == "Boat":
-                body_data = json.loads(self.request.body)
-                if "name" in body_data:
-                    boat.name = body_data["name"]
-                if "type" in body_data:
-                    boat.type = body_data["type"]
-                if "length" in body_data:
-                    boat.length = float(body_data["length"])
-                boat.put()
-                boat_dict = boat.to_dict()
-                self.response.write(json.dumps(boat_dict))
-            else:
-                self.response.write('can not find boat')
-                self.response.set_status(404)
 
     def delete(self, id=None):
         if id:
@@ -127,6 +107,24 @@ class BoatsHandler(webapp2.RequestHandler):
                 else:
                     self.response.write('can not find slip')
                     self.response.set_status(403)
+        elif boat_id:
+            key = ndb.Key(urlsafe=boat_id)
+            boat = key.get()
+            #   to check whether the boat with id is existed
+            if boat is not None and key.kind() == "Boat":
+                body_data = json.loads(self.request.body)
+                if "name" in body_data:
+                    boat.name = body_data["name"]
+                if "type" in body_data:
+                    boat.type = body_data["type"]
+                if "length" in body_data:
+                    boat.length = float(body_data["length"])
+                boat.put()
+                boat_dict = boat.to_dict()
+                self.response.write(json.dumps(boat_dict))
+            else:
+                self.response.write('can not find boat')
+                self.response.set_status(404)
         else:
             self.response.write('can not find Boat or not at sea')
             self.response.set_status(404)
@@ -151,7 +149,7 @@ class SplitsHandler(webapp2.RequestHandler):
         if id:
             key = ndb.Key(urlsafe=id)
             slip = key.get()
-            if key is not None and key.kind() == "Slip":
+            if slip is not None and key.kind() == "Slip":
                 slip_dict = slip.to_dict()
                 self.response.write(json.dumps(slip_dict))
             else:
@@ -185,6 +183,12 @@ class SplitsHandler(webapp2.RequestHandler):
             key = ndb.Key(urlsafe=id)
             slip = key.get()
             if slip is not None and key.kind() == "Slip":
+                # check whether there is a boat in the slip
+                if slip.current_boat is not None:
+                    boat_key = ndb.Key(urlsafe=slip.current_boat)
+                    boat = boat_key.get()
+                    boat.at_sea = True
+                    boat.put()
                 key.delete()
                 self.response.set_status(204)
             else:
