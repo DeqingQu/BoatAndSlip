@@ -90,7 +90,7 @@ class BoatsHandler(webapp2.RequestHandler):
                 self.response.write('can not find Boat')
                 self.response.set_status(404)
 
-    def put(self, boat_id=None, at_sea=None):
+    def patch(self, boat_id=None, at_sea=None):
         if boat_id and at_sea == 'at_sea':
             #   get boat entity
             boat_key = ndb.Key(urlsafe=boat_id)
@@ -107,10 +107,18 @@ class BoatsHandler(webapp2.RequestHandler):
                         arrival_slip = slip
                         break
                 if arrival_slip:
+                    # update slip info
                     arrival_slip.current_boat = None
                     arrival_slip.arrival_date = None
                     # arrival_slip.departure_history
+                    now_date = datetime.datetime.now().strftime("%m/%d/%Y")
+                    departure_record = {"departure_date": now_date, "departed_boat": boat.id}
+                    if arrival_slip.departure_history is None:
+                        arrival_slip.departure_history = [departure_record]
+                    else:
+                        arrival_slip.departure_history.append(departure_record)
                     arrival_slip.put()
+                    # update boat info
                     boat.at_sea = True
                     boat.put()
                     boat_dict = boat.to_dict()
@@ -197,7 +205,7 @@ class ArrivalHandler(webapp2.RequestHandler):
             if slip.current_boat is None:
                 boat.at_sea = False
                 slip.current_boat = boat.id
-                slip.arrival_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                slip.arrival_date = datetime.datetime.now().strftime("%m/%d/%Y")
                 slip_dict = slip.to_dict()
                 boat.put()
                 slip.put()
